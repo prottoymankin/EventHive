@@ -47,7 +47,8 @@ export const connectDB = async () => {
       CREATE TABLE IF NOT EXISTS bookings (
         id SERIAL PRIMARY KEY,
         event_id INT NOT NULL
-        REFERENCES events(id),
+        REFERENCES events(id)
+        ON DELETE CASECASE,
         attendee_id INT NOT NULL
         REFERENCES users(id),
         tickets_booked INT NOT NULL
