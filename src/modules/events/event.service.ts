@@ -22,6 +22,16 @@ const createEvent = async (req: Request, payload: CreateEventPayload) => {
   return event;
 };
 
+const getAllEvents = async (req: Request) => {
+  const queryResult = await pool.query<Event>(`
+    SELECT * FROM events
+    WHERE organizer_id = $1
+  `, [req.user?.id]);
+
+  return queryResult.rows;
+};
+
 export const eventService = {
-  createEvent
+  createEvent,
+  getAllEvents
 };
