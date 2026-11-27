@@ -48,7 +48,7 @@ export const connectDB = async () => {
         id SERIAL PRIMARY KEY,
         event_id INT NOT NULL
         REFERENCES events(id)
-        ON DELETE CASECASE,
+        ON DELETE CASCADE,
         attendee_id INT NOT NULL
         REFERENCES users(id),
         tickets_booked INT NOT NULL
