@@ -62,7 +62,7 @@ const getEventById = async (id: number) => {
   };
 };
 
-const updateEvent = async (id: number, payload: UpdateEventPayload) => {
+const updateEvent = async (id: number, payload: UpdateEventPayload, user_id: number) => {
   const eventQueryResult = await pool.query<Event>(`
     SELECT * FROM events
     WHERE id = $1
@@ -72,6 +72,10 @@ const updateEvent = async (id: number, payload: UpdateEventPayload) => {
 
   if (!event) {
     throw new AppError(404, "Event not found");
+  }
+
+  if (event.organizer_id !== user_id) {
+    throw new AppError(403, "Forbidden");
   }
 
   const { title, description, category, date, location, price, total_seats } = payload;
@@ -137,8 +141,6 @@ const deleteEvent = async (id: number, user_id: number) => {
   if (deleteEventQueryResult.rowCount === 0) {
     throw new AppError(400, "Failed to delete event");
   }
-
-
 };
 
 export const eventService = {

@@ -84,7 +84,7 @@ const updateEvent = async (req: Request, res: Response) => {
       );
     }
 
-    const data = await eventService.updateEvent(id, validationResult.data);
+    const data = await eventService.updateEvent(id, validationResult.data, req.user!.id);
 
     return sendResponse(res, 200, "Event updated successfully", true, data);
   } catch (error: unknown) {

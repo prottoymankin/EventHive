@@ -23,7 +23,7 @@ const signup = async (payload: SignupPayload) => {
     INSERT INTO users (name, email, password, role)
     VALUES ($1, $2, $3, $4)
     RETURNING *
-  `,[name, email, hashPassword, role]);
+  `,[name, email, hashPassword, role ?? "attendee"]);
 
   const user = queryResult.rows[0];
 
