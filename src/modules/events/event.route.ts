@@ -14,8 +14,13 @@ router.post(
 
 router.get("/", eventController.getAllEvents);
 
-router.get("/:id",
-  eventController.getEventById
+router.get("/:id", eventController.getEventById);
+
+router.post(
+  "/:id",
+  authenticateMiddleware,
+  authorizationMiddleware("organizer"),
+  eventController.updateEvent
 );
 
 export const eventRoutes = router;

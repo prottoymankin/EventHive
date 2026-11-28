@@ -10,4 +10,8 @@ export const createEventSchema = z.object({
   price: z.number().gte(0, "Price must be or grater than or equal 0")
 });
 
+export const updateEventSchema = createEventSchema.partial().strict();
+
 export type CreateEventPayload = z.infer<typeof createEventSchema>;
+
+export type UpdateEventPayload = z.infer<typeof updateEventSchema>;

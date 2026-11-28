@@ -1,5 +1,5 @@
 import { pool } from "../../config/db";
-import { CreateEventPayload } from "./event.schema";
+import { CreateEventPayload, UpdateEventPayload } from "./event.schema";
 import { Request } from "express";
 import { Event } from './event.interface';
 import { AppError } from "../../utils/AppError";
@@ -24,7 +24,7 @@ const createEvent = async (req: Request, payload: CreateEventPayload) => {
   return event;
 };
 
-const getAllEvents = async (req: Request) => {
+const getAllEvents = async () => {
   const queryResult = await pool.query<Event>(`
     SELECT * FROM events
     ORDER BY created_at DESC
@@ -60,10 +60,58 @@ const getEventById = async (id: number) => {
       email: user.email
     }
   };
-}
+};
+
+const updateEvent = async (id: number, payload: UpdateEventPayload) => {
+  const eventQueryResult = await pool.query<Event>(`
+    SELECT * FROM events
+    WHERE id = $1
+  `, [id]);
+
+  const event = eventQueryResult.rows[0];
+
+  if (!event) {
+    throw new AppError(404, "Event not found");
+  }
+
+  const { title, description, category, date, location, price, total_seats } = payload;
+
+  let new_available_seats: number | undefined;
+
+  if (total_seats !== undefined) {
+    const booked_seats = event.total_seats - event.available_seats;
+
+    if (booked_seats > total_seats) {
+      throw new AppError(400, `You cannot set total seats to ${total_seats}. Already ${booked_seats} seats have been booked.`)
+    }
+
+    new_available_seats = total_seats - booked_seats;
+  }
+
+  const updateEventQueryResult = await pool.query<Event>(`
+    UPDATE events
+    SET
+      title = COALESCE($1, title),
+      description = COALESCE($2, description),
+      category = COALESCE($3, category),
+      date = COALESCE($4, date),
+      location = COALESCE($5, location),
+      total_seats = COALESCE($6, total_seats),
+      price = COALESCE($7, price),
+      available_seats = COALESCE($8, available_seats),
+      updated_at = NOW()
+    WHERE id = $9
+    RETURNING *
+  `, [title ?? null, description ?? null, category ?? null, date ?? null, location ?? null, total_seats ?? null, price ?? null, new_available_seats ?? null, id]);
+
+  const updatedEvent = updateEventQueryResult.rows[0];
+
+  return updatedEvent;
+};
 
 export const eventService = {
   createEvent,
   getAllEvents,
-  getEventById
+  getEventById,
+  updateEvent
 };
