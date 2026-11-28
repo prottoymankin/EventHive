@@ -23,4 +23,11 @@ router.post(
   eventController.updateEvent
 );
 
+router.delete(
+  "/:id",
+  authenticateMiddleware,
+  authorizationMiddleware("organizer"),
+  eventController.deleteEvent
+);
+
 export const eventRoutes = router;

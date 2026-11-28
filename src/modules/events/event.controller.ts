@@ -3,7 +3,6 @@ import { AppError } from '../../utils/AppError';
 import { sendResponse } from '../../utils/sendResponse';
 import { createEventSchema, updateEventSchema } from './event.schema';
 import { eventService } from './event.service';
-import { object } from 'zod';
 
 const createEvent = async (req: Request, res: Response) => {
   try {
@@ -97,9 +96,30 @@ const updateEvent = async (req: Request, res: Response) => {
   }
 };
 
+const deleteEvent = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+  
+    if (!Number.isInteger(id) || id <= 0) {
+      return sendResponse(res, 400, "Invalid event id", false);
+    }
+
+    await eventService.deleteEvent(id, req.user!.id);
+
+    return sendResponse(res, 200, "Event deleted successfully", true);
+  } catch (error: unknown) {
+    if (error instanceof AppError) {
+      return sendResponse(res, error.statusCode, error.message, false);
+    }
+
+    return sendResponse(res, 500, "Internal server error", false);
+  }
+}
+
 export const eventController = {
   createEvent,
   getAllEvents,
   getEventById,
-  updateEvent
+  updateEvent,
+  deleteEvent
 };

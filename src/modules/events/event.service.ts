@@ -109,9 +109,42 @@ const updateEvent = async (id: number, payload: UpdateEventPayload) => {
   return updatedEvent;
 };
 
+const deleteEvent = async (id: number, user_id: number) => {
+  const eventQueryResult = await pool.query<Event>(`
+    SELECT * FROM events
+    WHERE id = $1
+  `, [id]);
+
+  const event = eventQueryResult.rows[0];
+
+  if (!event) {
+    throw new AppError(404, "Event not found");
+  }
+
+  if (event.organizer_id !== user_id) {
+    throw new AppError(403, "Forbidden");
+  }
+
+  if (event.available_seats < event.total_seats) {
+    throw new AppError(400, "Cannot delete this event because seats have already been booked.");
+  }
+
+  const deleteEventQueryResult = await pool.query(`
+    DELETE FROM events
+    WHERE id = $1
+  `, [id]);
+
+  if (deleteEventQueryResult.rowCount === 0) {
+    throw new AppError(400, "Failed to delete event");
+  }
+
+
+};
+
 export const eventService = {
   createEvent,
   getAllEvents,
   getEventById,
-  updateEvent
+  updateEvent,
+  deleteEvent
 };
